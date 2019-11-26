@@ -58,57 +58,47 @@
 
 (defn- http-header->jwt-token
   [headers]
-  (if (contains? headers "Authorization")
-      (let [auth-header (get headers "Authorization")
-            [bearer token] (str/split auth-header #" " 2)]
-        (if (= (str/lower-case bearer) "bearer")
-          token
-          (throw (Exception. "Authorization header did not start with 'bearer'"))))
-      (throw (Exception. "Could not find Authorization header"))))
+  (let [header-name (config/config-str :jwt-header-name)]
+    (if (contains? headers header-name)
+      (get headers header-name)
+      (throw (Exception. "Could not find Authorization header")))))
 
-
+(def fake-now (clj-time.coerce/from-long (* (- 1564566790 100) 1000)))
 (defn- verify-token
   [token pkey]
   (let [alg (get-alg token)]
     (jwt/unsign token pkey {:alg alg :now fake-now}))) ; TODO: remove fake date
 
 
+(defn- ssl-config []
+  (if (config/config-bool :jwt-insecure-request-pkey)
+    {:insecure? true}
+    {:trust-store (config/config-str :mb-jetty-ssl-truststore)
+     :trust-store-pass (config/config-str :mb-jetty-ssl-truststore-password)}))
+
+
 (defn- get-verification-key
-  [token]
-  (-> token
-      (get-verification-key-url)
-      ((fn [x] "http://localhost:5000/auth/token/public")) ;; change actual url by our mock TODO: remove
-      (clj-http.client/get) ;; TODO: check how do we use this with TLS
+  [url]
+  (-> url
+      (clj-http.client/get (ssl-config))
       (:body)
       (keys/str->public-key)))
-
-
-(defn- errors?
-  [& rest]
-  (not-empty (filter :error rest)))
-
-
-(defn- get-errors
-  [& rest]
-  (->> rest
-       (filter :error)
-       (map #(str (:error %)))
-       (interleave (repeat "; "))
-       (drop 1)
-       (apply str)))
 
 
 (defn http-headers->user-info
   [headers]
   (try
-    (let [token (http-header->jwt-token headers)
-          pkey (if token (get-verification-key token))]
+    (let [username-claim (config/config-kw :jwt-usernam-claim)
+          groups-claim (config/config-kw :jwt-groups-claim)
+          token (http-header->jwt-token headers)
+          pkey (get-verification-key (config/config-str :jwt-public-key-endpoint))]
       (cond
         (not token) {:error "Could not obtain jwt token from request headers"}
         (not pkey) {:error "Could not obtain verification key for jwt token"}
-        pkey (-> token
-                 (verify-token pkey)
-                 (select-keys [:user :groups])
-                 (update-in [:groups] #(str/split % #",")))))
+        pkey (let [info (-> token
+                            (verify-token pkey)
+                            (select-keys [username-claim groups-claim])
+                            (update-in [groups-claim] #(str/split % #",")))]
+               {:user (username-claim info) :groups (groups-claim info)})))
     (catch Exception e
       {:error (.toString e)})))
