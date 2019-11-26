@@ -6,7 +6,8 @@
             [clj-time.core :as time]
             [clojure.string :as str]
             [cheshire.core :as json]
-            [metabase.config :as config]))
+            [metabase.config :as config]
+            [clojure.tools.logging :as log]))
 
 
 (defn- split-token
@@ -58,16 +59,18 @@
 
 (defn- http-header->jwt-token
   [headers]
-  (let [header-name (config/config-str :jwt-header-name)]
-    (if (contains? headers header-name)
-      (get headers header-name)
-      (throw (Exception. "Could not find Authorization header")))))
+  (let [header-name       (config/config-str :jwt-header-name)
+        header-name-lower (str/lower-case header-name)]
+    (cond
+      (contains? headers header-name)       (get headers header-name)
+      (contains? headers header-name-lower) (get headers header-name-lower)
+      :else                                 (throw (Exception. "Could not find Authorization header")))))
 
-(def fake-now (clj-time.coerce/from-long (* (- 1564566790 100) 1000)))
+
 (defn- verify-token
   [token pkey]
   (let [alg (get-alg token)]
-    (jwt/unsign token pkey {:alg alg :now fake-now}))) ; TODO: remove fake date
+    (jwt/unsign token pkey {:alg alg})))
 
 
 (defn- ssl-config []
@@ -75,7 +78,6 @@
     {:insecure? true}
     {:trust-store (config/config-str :mb-jetty-ssl-truststore)
      :trust-store-pass (config/config-str :mb-jetty-ssl-truststore-password)}))
-
 
 (defn- get-verification-key
   [url]
@@ -87,8 +89,9 @@
 
 (defn http-headers->user-info
   [headers]
+  (log/debug "Getting user info from JWT token")
   (try
-    (let [username-claim (config/config-kw :jwt-usernam-claim)
+    (let [username-claim (config/config-kw :jwt-username-claim)
           groups-claim (config/config-kw :jwt-groups-claim)
           token (http-header->jwt-token headers)
           pkey (get-verification-key (config/config-str :jwt-public-key-endpoint))]
@@ -98,7 +101,7 @@
         pkey (let [info (-> token
                             (verify-token pkey)
                             (select-keys [username-claim groups-claim])
-                            (update-in [groups-claim] #(str/split % #",")))]
+                            (update-in [groups-claim] #(if (empty? %) [] (str/split % #","))))]
                {:user (username-claim info) :groups (groups-claim info)})))
     (catch Exception e
       {:error (.toString e)})))
