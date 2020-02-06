@@ -2,7 +2,7 @@
 
 ## 0.36.0 (upcoming)
 
-* Pending changelog
+* Fix vulnerabilities
 
 ## 0.35.0-af854b5 (Built: January 16, 2020 | Pre-release)
 
