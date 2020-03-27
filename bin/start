@@ -169,4 +169,4 @@ INFO "Using these JAVA_OPTS: ${JAVA_OPTS}"
 
 INFO "exec java $JAVA_OPTS -jar ./target/uberjar/metabase.jar"
 
-exec java $JAVA_OPTS -jar ./target/uberjar/metabase.jar
+exec java $JAVA_OPTS -jar /app/target/uberjar/metabase.jar
