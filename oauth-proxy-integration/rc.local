@@ -12,11 +12,9 @@ export CONV_MARATHON_APP_ID=$DISCOVERY_INSTANCE_NAME
 
 # we use a different env. variable to not make it confusing when someone uses the "native JWT auth"
 if [[ "$USE_GOSEC_SSO_AUTH" != "true" ]]; then
-    INFO "Using native discovery authentication"
     export JWT_VALIDATION_DISABLED="false"
     copy "${nginx_conf_dir}/nginx.conf.native-auth" "${nginx_conf_dir}/nginx.conf"
 else
-    INFO "Using dcos-oauth authentication"
     copy "${nginx_conf_dir}/nginx.conf.sso-auth" "${nginx_conf_dir}/nginx.conf"
 fi
 
