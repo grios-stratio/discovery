@@ -11,11 +11,15 @@ fi
 export CONV_MARATHON_APP_ID=$DISCOVERY_INSTANCE_NAME
 
 # we use a different env. variable to not make it confusing when someone uses the "native JWT auth"
+# only if varible is defined and set to true do we use dcos-oauth
 if [[ "$USE_GOSEC_SSO_AUTH" != "true" ]]; then
-    export JWT_VALIDATION_DISABLED="false"
-    copy "${nginx_conf_dir}/nginx.conf.native-auth" "${nginx_conf_dir}/nginx.conf"
+    # we usgin native authentication so we disable dcos-oauth
+    export JWT_VALIDATION_DISABLED="true"
+    cp "${nginx_conf_dir}/nginx.conf.native-auth" "${nginx_conf_dir}/nginx.conf"
 else
-    copy "${nginx_conf_dir}/nginx.conf.sso-auth" "${nginx_conf_dir}/nginx.conf"
+    # we are delegating authentication in dcos-oauth
+    export JWT_VALIDATION_DISABLED="false"
+    cp "${nginx_conf_dir}/nginx.conf.sso-auth" "${nginx_conf_dir}/nginx.conf"
 fi
 
 source /etc/rc.local.base
