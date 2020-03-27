@@ -78,11 +78,13 @@ RUN keytool -noprompt -import -trustcacerts -alias aws-rds \
   -keystore /etc/ssl/certs/java/cacerts \
   -keypass changeit -storepass changeit
 
+
 # ###################
 # # STAGE 2: runner
 # ###################
 
-FROM adoptopenjdk/openjdk11:alpine-jre as runner
+# FROM adoptopenjdk/openjdk11:alpine-jre as runner
+FROM qa.stratio.com/stratio/oauth-base:0.1.0-SNAPSHOT as runner
 
 WORKDIR /app
 
@@ -90,14 +92,30 @@ ENV FC_LANG en-US
 ENV LC_CTYPE en_US.UTF-8
 
 # dependencies
-RUN apk add --update bash ttf-dejavu fontconfig && \
-    apk add --update curl && \
-    apk add --update jq && \
-    apk add --update openssl && \
-    rm -rf /var/cache/apk/*
+RUN apt-get update \
+  &&  apt-get install -y ttf-dejavu fontconfig wget \
+  && apt-get -qq clean \
+  && rm -rf /var/lib/apt/lists/*
+
+# RUN apk add --update bash ttf-dejavu fontconfig && \
+#     apk add --update curl && \
+#     apk add --update jq && \
+#     apk add --update openssl && \
+#     rm -rf /var/cache/apk/*
+
+# ***************************************************************
+#   Install JAVA - 1.8.0
+# ***************************************************************
+RUN wget http://tools.stratio.com/jdk/jdk-8u131-linux-x64.tar.gz \
+  && tar zfx jdk-8u131-linux-x64.tar.gz -C /usr/local/ \
+  && rm -rf $JAVA_HOME/man \
+  && rm jdk-8u131-linux-x64.tar.gz
+ENV JAVA_HOME=/usr/local/jdk1.8.0_131
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 # add fixed cacerts
-COPY --from=builder /etc/ssl/certs/java/cacerts /usr/lib/jvm/default-jvm/jre/lib/security/cacerts
+# COPY --from=builder /etc/ssl/certs/java/cacerts /usr/lib/jvm/default-jvm/jre/lib/security/cacerts
+COPY --from=builder /etc/ssl/certs/java/cacerts /usr/local/jdk1.8.0_131/jre/lib/security/cacerts
 
 # add Metabase script and uberjar
 RUN mkdir -p bin target/uberjar && \
@@ -108,13 +126,18 @@ COPY --from=builder /app/source/resources/log4j2.xml /app/target/log/
 COPY --from=builder /root/defaultsecrets/* /root/defaultsecrets/
 COPY --from=builder /root/kms/* /root/kms/
 
-
 # create the plugins directory, with writable permissions
 RUN mkdir -p /plugins
 RUN chmod a+rwx /plugins
 
-# expose our default runtime port
-EXPOSE 3000
+# add scripts and conf for oauth-base (proxy with sso authenticatin) integration
+# Set up our "pre" rc.local to set some enviroment variables to the oauth-base rc.local
+RUN  mv /etc/rc.local /etc/rc.local.base
+COPY /oauth-proxy-integration/rc.local /etc/rc.local
+COPY /oauth-proxy-integration/docker-entrypoint.sh /docker-entrypoint.sh
+COPY /oauth-proxy-integration/metabase-service /etc/service/metabase
+RUN chmod +x /etc/service/metabase/run /etc/rc.local
+COPY /oauth-proxy-integration/nginx-confs/* /usr/local/openresty/nginx/conf/
 
 # run it
-ENTRYPOINT ["/app/bin/start"]
+# ENTRYPOINT ["/app/bin/start"]
