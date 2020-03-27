@@ -20,12 +20,7 @@ else
   echo "Environment variable 'MB_DB_URL' was not detected. 'MB_DB_HOST' and 'MB_DB_PORT' will be used instead."
 fi
 
-source /root/kms/kms_utils.sh
-source /root/kms/b-log.sh
-
-
-source /root/kms/secrets.sh
-
+source /usr/local/lib/b-log.sh
 
 export VAR_SSL_Keystore_Password=`cat /root/.crossdata/keyStore`
 export VAR_SSL_Truststore_Password=`cat /root/.crossdata/trustStore`
