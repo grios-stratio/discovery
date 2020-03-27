@@ -1,4 +1,5 @@
 #!/bin/sh
 exec 2>&1
 
-exec /app/bin/start
+# chpst -e reads the files in /env_vars as names of environment variables with value the content of the file
+chpst -e /env_vars /app/bin/start

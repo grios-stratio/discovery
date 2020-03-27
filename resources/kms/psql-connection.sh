@@ -54,4 +54,6 @@ if [[ -z "$MB_DB_CONNECTION_URI" ]]; then
         INFO "Found additional JDBC parameters: " $MB_JDBC_PARAMETERS
         export MB_DB_CONNECTION_URI="$CONNECTION_STRING&$MB_JDBC_PARAMETERS"
     fi
+    # put the env var in this file so we can read it when the metabase service starts
+    echo "$MB_DB_CONNECTION_URI" > /env_vars/MB_DB_CONNECTION_URI
 fi
