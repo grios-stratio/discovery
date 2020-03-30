@@ -129,6 +129,8 @@
   "Find a matching `Group` if one exists. Create user, assign group and return a new Session for them, or `nil` if they couldn't be authenticated."
   [username password headers]
   (let [user-info (http-headers->user-info headers)]
+    (log/debug "received headers: " headers)
+    (log/debug "expected user and group headers: " (str (public-settings/group-header)) ", " (str (public-settings/user-header)))
     (log/debug "received user info: " user-info)
     (if-not (contains? user-info :error)
       (let [header-groups (get-existing-groups (:groups user-info))
