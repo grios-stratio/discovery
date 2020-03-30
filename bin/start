@@ -42,8 +42,9 @@ export MB_EMOJI_IN_LOGS="false"
 # Authorization is metabase native or managed by the proxy?
 if [ "$USE_GOSEC_SSO_AUTH" == "true" ]; then
     # we need to set the auth headers that the oauth-proxy will send us down
-    export MB_USER_HEADER="X-WEBAUTH-USER"
-    export MB_GROUP_HEADER="X-WEBAUTH-GROUPS"
+    # note that the header map in metabase is always lowercase
+    export MB_USER_HEADER="x-dcos-oauth-user"
+    export MB_GROUP_HEADER="x-dcos-oauth-groups"
 fi
 
 
