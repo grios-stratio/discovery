@@ -220,17 +220,24 @@
   [:as {:keys [metabase-session-id]}]
   (api/check-exists? Session metabase-session-id)
   (db/delete! Session :id metabase-session-id)
-  ;;< STRATIO - audit-log the user logout
+  ;;< STRATIO - audit-log the user logout and redirect to dcos-oauth logout when using it
   (let [user @api/*current-user*
         user-name (or (:first_name user) "-")
-        user-id (:id user)]
+        user-id (:id user)
+        proxy-oauth? (config/config-bool :use-gosec-sso-auth)
+        marathon-vpath (config/config-str :marathon-app-label-haproxy-1-path)
+        location (str marathon-vpath "/logout")
+        proxy-oauth-redirect {:status 303, :headers {"Location" location}, :body nil}
+        response (if proxy-oauth? proxy-oauth-redirect api/generic-204-no-content)]
     (audit/log user-name
                "metabase.api.session"
                {:topic :user-logout
                 :item {:user_id user-id
-                       :session_id (str metabase-session-id)}}))
+                       :session_id (str metabase-session-id)}})
+    (mw.session/clear-session-cookie response))
+  ;; (mw.session/clear-session-cookie api/generic-204-no-content)
   ;; STRATIO >
-  (mw.session/clear-session-cookie api/generic-204-no-content))
+  )
 
 ;; Reset tokens: We need some way to match a plaintext token with the a user since the token stored in the DB is
 ;; hashed. So we'll make the plaintext token in the format USER-ID_RANDOM-UUID, e.g.
