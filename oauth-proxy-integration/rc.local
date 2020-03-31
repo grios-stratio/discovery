@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-nginx_conf_dir=/usr/local/openresty/nginx/conf
 
 # Datio compatibility
 if [[ "$TENANT_NAME" != "" ]]; then
@@ -15,11 +14,9 @@ export CONV_MARATHON_APP_ID=$DISCOVERY_INSTANCE_NAME
 if [[ "$USE_GOSEC_SSO_AUTH" != "true" ]]; then
     # we usgin native authentication so we disable dcos-oauth
     export JWT_VALIDATION_DISABLED="true"
-    cp "${nginx_conf_dir}/nginx.conf.native-auth" "${nginx_conf_dir}/nginx.conf"
 else
     # we are delegating authentication in dcos-oauth
     export JWT_VALIDATION_DISABLED="false"
-    cp "${nginx_conf_dir}/nginx.conf.sso-auth" "${nginx_conf_dir}/nginx.conf"
 fi
 
 source /etc/rc.local.base
