@@ -1,5 +1,18 @@
 #!/bin/bash
 
+
+if [ -n "$MB_DB_URL" ]; then
+    if [ "${MB_DB_URL:${#MB_DB_URL}-5:1}" == ':' ]; then
+        export MB_DB_HOST="$(echo "$MB_DB_URL" | cut -d':' -f 1)"
+        export MB_DB_PORT="$(echo "$MB_DB_URL" | cut -d':' -f 2)"
+    else
+        echo "Invalid database URL format: $MB_DB_URL"
+    fi
+else
+    echo "Environment variable 'MB_DB_URL' was not detected. 'MB_DB_HOST' and 'MB_DB_PORT' will be used instead."
+fi
+
+
 INFO "$USER"
 if [ "$MB_DB_SSL" = "true" ]; then
     INFO "Obtaining and setting TLS secrets for SSL secured Postgres"
