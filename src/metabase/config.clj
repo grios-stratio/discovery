@@ -42,7 +42,6 @@
 
    ;; setting to check if using dcos-oauth authentication
    :use-gosec-sso-auth "false"
-   :cluster-url ""
    :marathon-app-label-haproxy-1-path "/"})
 
 
