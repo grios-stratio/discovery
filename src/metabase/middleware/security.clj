@@ -85,8 +85,15 @@
                   :img-src      ["*"
                                  "'self' data:"]
                   :connect-src  ["'self'"
+                                 ;; < STRATIO Changes to be able to log out from sso when we use the dcos-oauth proxy
+                                 (let [proxy-auth? (config/config-bool :use-gosec-sso-auth)
+                                       cluster-url (config/config-str :cluster-url)
+                                       sso-domain (if (not-empty cluster-url) (str cluster-url ":9005") "")]
+                                   (when proxy-auth? sso-domain))
+                                 ;; (stratio) We do not want this MailChimp thing so we comment the domain below
                                  ;; MailChimp. So people can sign up for the Metabase mailing list in the sign up process
-                                 "metabase.us10.list-manage.com"
+                                 ;; "metabase.us10.list-manage.com"
+                                 ;; STRATIO >
                                  (when config/is-dev?
                                    "localhost:8080 ws://localhost:8080")]
                   :manifest-src ["'self'"]}]
