@@ -7,7 +7,10 @@ if [[ "$TENANT_NAME" != "" ]]; then
 fi
 
 # set up env variable that oauth-base rc.local uses to download secrets
-export CONV_MARATHON_APP_ID=$DISCOVERY_INSTANCE_NAME
+CONV_MARATHON_APP_ID=$DISCOVERY_INSTANCE_NAME
+OAUTH_COOKIE_PREFIX=${DISCOVERY_INSTANCE_NAME:-$OAUTH_COOKIE_PREFIX}
+export CONV_MARATHON_APP_ID
+export OAUTH_COOKIE_PREFIX
 
 # we use a different env. variable to not make it confusing when someone uses the "native JWT auth"
 # only if varible is defined and set to true do we use dcos-oauth
