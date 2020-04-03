@@ -6,7 +6,7 @@ hose {
     REPOSITORY = 'discovery'
     SLACKTEAM = 'data-governance'
     BUILDTOOL = 'make'
-    DEVTIMEOUT = 60
+    DEVTIMEOUT = 120
     RELEASETIMEOUT = 80
     BUILDTOOLVERSION = '3.5.0'
     NEW_VERSIONING = 'true'
@@ -14,7 +14,7 @@ hose {
     ATTIMEOUT = 90
     INSTALLTIMEOUT = 90
     ANCHORE_POLICY = 'discovery'
-        
+
     PKGMODULESNAMES = ['discovery']
 
     DEV = { config ->
