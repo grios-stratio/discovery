@@ -29,7 +29,9 @@
       [toucan.db :as db]
       [metabase.util
        [honeysql-extensions :as hx]
-       [date :as du]] )
+       [date :as du]
+       [i18n :refer [trs]]]
+      [metabase.sync.util :as sync-util])
   (:import [java.sql PreparedStatement Time] java.util.Date))
 
 ;; Register Crossdata driver
@@ -123,13 +125,18 @@
 ;; refresh values in Metabase cache
 (defmethod driver/describe-table :crossdata
   [driver {:keys [details] :as database} {table-name :name, schema :schema, :as table}]
-  ; Do a "refresh schema.table" to update metadata. This is mandatory.
-  (with-open [conn (jdbc/get-connection (sql-jdbc.conn/db->pooled-connection-spec database))]
-    (jdbc/query {:connection conn}
-                [(format "refresh table %s.%s" schema table-name) ]))
-  ((get-method driver/describe-table :sql-jdbc) driver database table)
-
-  )
+  (let [result (sync-util/with-error-handling
+                 (trs "Error while running describe-table in XD driver for ''{0}''. Will return empty metadata. Error"
+                      (sync-util/name-for-logging table))
+                 ;; Do a "refresh schema.table" to update metadata. This is mandatory.
+                 (with-open [conn (jdbc/get-connection (sql-jdbc.conn/db->pooled-connection-spec database))]
+                   (jdbc/query {:connection conn}
+                               [(format "refresh table %s.%s" schema table-name) ]))
+                 ((get-method driver/describe-table :sql-jdbc) driver database table))
+        result-on-error {:name table-name
+                         :schema nil
+                         :fields #{}}]
+    (if (map? result) result result-on-error)))
 
 
 (defn- run-query
