@@ -4,6 +4,7 @@
 
 * Make proxies timeout configurable
 * Bump import/export artifact version to 1.2.0-e81eb29
+* Improve fault tolerance on Crossdata driver describe-table
 
 ## 0.38.0-04ad956 (Built: May 28, 2020 | Released: May 28, 2020)
 
