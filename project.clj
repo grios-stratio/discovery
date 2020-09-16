@@ -27,6 +27,10 @@
    "repl"                              ["with-profile" "+repl" "repl"]
    "strip-and-compress"                ["with-profile" "+strip-and-compress" "run"]}
 
+  ;; < STRATIO - we need this repository so we can depend on crossdata-jdbc
+  :repositories [["stratio" "https://niquel.stratio.com:1443/repository/public"]]
+  ;; STRATIO >
+
   ;; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ;; !!                                   PLEASE KEEP THESE ORGANIZED ALPHABETICALLY                                  !!
   ;; !!                                   AND ADD A COMMENT EXPLAINING THEIR PURPOSE                                  !!
@@ -77,6 +81,11 @@
    [com.draines/postal "2.0.3"]                                       ; SMTP library
    [com.jcraft/jsch "0.1.55"]                                         ; SSH client for tunnels
    [com.h2database/h2 "1.4.197"]                                      ; embedded SQL database
+   ;; < STRATIO
+   [com.stratio.crossdata.driver/stratio-crossdata-jdbc4              ; adding crossdata jdbc makes the logs work.
+     "2.17.0-07b9b70"                                                 ; TODO: we should just depend on whatever makes the logs work...
+     :exclusions [com.fasterxml.jackson.core/jackson-core]]
+   ;; STRATIO >
    [com.mattbertolini/liquibase-slf4j "2.0.0"]                        ; Java Migrations lib logging. We don't actually use this AFAIK (?)
    [com.taoensso/nippy "2.14.0"]                                      ; Fast serialization (i.e., GZIP) library for Clojure
    [commons-codec/commons-codec "1.12"]                               ; Apache Commons -- useful codec util fns
