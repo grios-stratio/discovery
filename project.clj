@@ -84,7 +84,9 @@
    ;; < STRATIO
    [com.stratio.crossdata.driver/stratio-crossdata-jdbc4              ; adding crossdata jdbc makes the logs work.
      "2.17.0-07b9b70"                                                 ; TODO: we should just depend on whatever makes the logs work...
-     :exclusions [com.fasterxml.jackson.core/jackson-core]]
+    :exclusions [com.fasterxml.jackson.core/jackson-core
+                 org.bouncycastle/bcpkix-jdk15on
+                 org.bouncycastle/bcprov-jdk15on]]
    ;; STRATIO >
    [com.mattbertolini/liquibase-slf4j "2.0.0"]                        ; Java Migrations lib logging. We don't actually use this AFAIK (?)
    [com.taoensso/nippy "2.14.0"]                                      ; Fast serialization (i.e., GZIP) library for Clojure
