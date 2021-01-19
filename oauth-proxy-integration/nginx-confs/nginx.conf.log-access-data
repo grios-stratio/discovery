@@ -107,7 +107,10 @@ http {
 
 
         # These api endpints are not authenticated (see metabase/api/routes.clj)
-        location ~ ^/api/(geojson|public|session|setup|util) {
+        # session is also public in metabase but we must restrict access when using sso
+        # since in the metabase end we are just looking for some headers
+        # session/properties though we keep it open just in case these (public) properties are needed
+        location ~ ^/api/(geojson|public|setup|util|session/properties) {
             proxy_read_timeout ${PROXY_READ_TIMEOUT}s;
             proxy_pass http://127.0.0.1:3000;
         }
