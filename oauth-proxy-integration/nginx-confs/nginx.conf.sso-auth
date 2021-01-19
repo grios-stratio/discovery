@@ -32,13 +32,6 @@ http {
         set $response_body '';
 
         location / {
-            proxy_read_timeout ${PROXY_READ_TIMEOUT}s;
-            proxy_pass http://127.0.0.1:3000;
-        }
-
-
-        location /api {
-            # Only api endpoints are authenticated (and not all of them, see below)
             access_by_lua_block {
                 auth.validate_jwt_or_login();
             }
@@ -51,6 +44,11 @@ http {
             proxy_pass http://127.0.0.1:3000;
         }
 
+        # These endpoints are not authenticated (see metabase/routes.clj )
+        location ~ ^/(favicon.ico|app|public|embed) {
+            proxy_read_timeout ${PROXY_READ_TIMEOUT}s;
+            proxy_pass http://127.0.0.1:3000;
+        }
 
         # These api endpints are not authenticated (see metabase/api/routes.clj)
         # session is also public in metabase but we must restrict access when using sso

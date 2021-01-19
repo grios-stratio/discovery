@@ -62,12 +62,6 @@ http {
 
 
         location / {
-            proxy_read_timeout ${PROXY_READ_TIMEOUT}s;
-            proxy_pass http://127.0.0.1:3000;
-        }
-
-
-        location /api {
             # Only api endpoints are authenticated (and not all of them, see below)
             lua_need_request_body on;
             access_by_lua_block {
@@ -101,6 +95,13 @@ http {
 
             gzip on;
             proxy_set_header Accept-Encoding "";
+            proxy_read_timeout ${PROXY_READ_TIMEOUT}s;
+            proxy_pass http://127.0.0.1:3000;
+        }
+
+
+        # These endpoints are not authenticated (see metabase/routes.clj )
+        location ~ ^/(favicon.ico|app|public|embed) {
             proxy_read_timeout ${PROXY_READ_TIMEOUT}s;
             proxy_pass http://127.0.0.1:3000;
         }
