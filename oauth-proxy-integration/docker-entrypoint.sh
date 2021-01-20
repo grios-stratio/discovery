@@ -24,7 +24,7 @@ else
         export EMBED_TOKEN_USER_CLAIM="${EMBED_TOKEN_USER_CLAIM:-sub}"
         export EXTRA_NGINX_LOG_PROPERTIES="${EXTRA_NGINX_LOG_PROPERTIES:-escape=json}"
         # We log all the responses in the nginx
-        envsubst '\$NGINX_ERROR_LOG_LEVEL \$PROXY_READ_TIMEOUT \$EMBED_TOKEN_USER_CLAIM' < ${nginx_conf_dir}/nginx.conf.log-access-data > ${nginx_conf_dir}/nginx.conf
+        envsubst '\$NGINX_ERROR_LOG_LEVEL \$PROXY_READ_TIMEOUT \$EXTRA_NGINX_LOG_PROPERTIES \$EMBED_TOKEN_USER_CLAIM' < ${nginx_conf_dir}/nginx.conf.log-access-data > ${nginx_conf_dir}/nginx.conf
     else
         envsubst '\$NGINX_ERROR_LOG_LEVEL \$PROXY_READ_TIMEOUT' < ${nginx_conf_dir}/nginx.conf.sso-auth > ${nginx_conf_dir}/nginx.conf
 
