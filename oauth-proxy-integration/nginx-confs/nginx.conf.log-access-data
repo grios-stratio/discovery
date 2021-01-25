@@ -93,6 +93,8 @@ http {
                 set_response_body()
             }
 
+            # we do not want to recived gzipped data from the backend since the logged body will be nonsense
+            # if that is the case. Modify the accept-encoding header and gzip the outgoing response here.
             gzip on;
             proxy_set_header Accept-Encoding "";
             proxy_read_timeout ${PROXY_READ_TIMEOUT}s;
